@@ -1,7 +1,7 @@
 # Discord-LastSeen-BOT
 A simple python script for a discord bot that saves server member online/offline status changes.
 
-With a command to check 'last-seen' info with `/seen [username]` (no @ symbol or [])
+With a command to check 'last-seen' info with `/seen [username]` (no @ symbol or [] included)
 
 **SETUP**
 - Create a BOT here: https://discord.com/developers/applications
