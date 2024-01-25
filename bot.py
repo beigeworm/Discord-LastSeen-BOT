@@ -4,7 +4,9 @@ import asyncio
 from datetime import datetime, timezone
 from discord.ext import commands
 
+// Add Your BOT Token Here
 bot_token = 'YOUR_BOT_TOKEN_HERE'
+
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 bot.activity = discord.Game(name="/seen")
