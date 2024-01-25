@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime, timezone
 from discord.ext import commands
 
-// Add Your BOT Token Here
+# Add Your BOT Token Here
 bot_token = 'YOUR_BOT_TOKEN_HERE'
 
 intents = discord.Intents.all()
