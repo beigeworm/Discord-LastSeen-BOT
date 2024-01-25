@@ -91,9 +91,29 @@ async def last_seen(ctx, user_identifier: str):
         with open(f'lastseen_{server_id}.json', 'r') as last_seen_file:
             last_seen_data = json.load(last_seen_file)
         last_seen_time = last_seen_data.get(username, last_seen_data.get(display_name, '`Not available` '))
-        await ctx.send(f'**{user_identifier}** was last seen online at: `{last_seen_time}` ')
+        
+        if last_seen_time == 'Online Now':
+            await ctx.send(f'**{user_identifier}** is currently online.')
+        else:
+            last_seen_timestamp = datetime.strptime(last_seen_time, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=timezone.utc)
+            now_utc = datetime.now(timezone.utc)
+            
+            time_difference = now_utc - last_seen_timestamp
+            time_difference_str = format_timedelta(time_difference)
+            
+            await ctx.send(f'**{user_identifier}** was last seen online at: `{last_seen_time}` '
+                           f'(Approximately {time_difference_str} ago)')
     except FileNotFoundError:
         await ctx.send('No last seen data available.')
+
+
+def format_timedelta(td):
+    days, seconds = td.days, td.seconds
+    hours = days * 24 + seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return f"{hours} hrs, {minutes} mins, {seconds} secs"
+
 
 async def update_statuses_loop(server):
     while True:
