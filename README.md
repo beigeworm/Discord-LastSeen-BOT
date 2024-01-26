@@ -14,3 +14,4 @@ With a command to check 'last-seen' info with `/seen [username]` (no @ symbol or
 - Open powershell
 - run `pip install discord.py`
 - then run `python ./C:/path/to/yourbot.py`
+- Alternatively use the exe file and enter your bot token to run.
