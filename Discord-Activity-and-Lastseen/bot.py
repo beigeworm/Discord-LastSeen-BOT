@@ -244,6 +244,6 @@ async def on_message_delete(message):
     channel = bot.get_channel(channel_id)
     author = message.author
     content = message.content
-    await channel.send(f'> **{author.display_name}** Deleted the message: `{content}`')
+    await channel.send(f'> :no_entry_sign: **{author.display_name}** Deleted the message: `{content}`')
 
 bot.run(bot_token)
