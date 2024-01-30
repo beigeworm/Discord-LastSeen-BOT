@@ -144,13 +144,13 @@ async def update_statuses_loop(server):
             previous_status = previous_status_data['status']
             if status == 'idle' and status != previous_status:
                 channel = bot.get_channel(channel_id)
-                await channel.send(f'> **{member.display_name}** Changed status to: `{status}`')
+                await channel.send(f'> :orange_circle: **{member.display_name}** Changed status to: `{status}`')
                 previous_statuses[username].update({'status': status})
                 continue
 
             if status == 'dnd' and status != previous_status:
                 channel = bot.get_channel(channel_id)
-                await channel.send(f'> **{member.display_name}** Changed status to: `do not disturb`')
+                await channel.send(f'> :no_entry: **{member.display_name}** Changed status to: `do not disturb`')
                 previous_statuses[username].update({'status': status})
                 continue
 
@@ -164,10 +164,10 @@ async def update_statuses_loop(server):
                 if status == 'offline' and status_changed_time is not None:
                     last_online_timestamp = datetime.strptime(previous_last_online_time, '%Y-%m-%d %H:%M:%S %Z').replace(tzinfo=timezone.utc)
                     offline_duration = datetime.now(timezone.utc) - last_online_timestamp
-                    offline_message = f'> **{display_name}** Changed status to: `{status}` - Total online time:`{str(offline_duration).split(".")[0]}`'
+                    offline_message = f'> :red_circle: **{display_name}** Changed status to: `{status}` - Total online time:`{str(offline_duration).split(".")[0]}`'
                     await channel.send(offline_message)
                 elif status_changed_time is not None:
-                    await channel.send(f'> **{display_name}** Changed status to: `{status}`')
+                    await channel.send(f'> :green_circle: **{display_name}** Changed status to: `{status}`')
 
                 previous_statuses[username].update({'status': status, 'last_online_time': last_online_time, 'status_changed_time': datetime.now()})
         await asyncio.sleep(10)
@@ -202,7 +202,7 @@ async def last_seen(ctx, user_identifier: str):
         last_seen_time = last_seen_data.get(username, last_seen_data.get(display_name, '`Not available` '))
         
         if last_seen_time == 'Online Now':
-            await ctx.send(f'**{user_identifier}** is currently online.')
+            await ctx.send(f' :green_circle: **{user_identifier}** is currently online.')
         else:
             last_seen_timestamp = datetime.strptime(last_seen_time, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=timezone.utc)
             now_utc = datetime.now(timezone.utc)
@@ -227,10 +227,10 @@ async def on_voice_state_update(member, before, after):
     if before.channel != after.channel:
         if after.channel is not None:
             channel = bot.get_channel(channel_id)
-            await channel.send(f'> **{member.display_name}** Joined voice channel: `{after.channel.name}`')
+            await channel.send(f'> :mega: **{member.display_name}** Joined voice channel: `{after.channel.name}`')
         elif before.channel is not None:
             channel = bot.get_channel(channel_id)
-            await channel.send(f'> **{member.display_name}** Left voice channel: `{before.channel.name}`')
+            await channel.send(f'> :mega: **{member.display_name}** Left voice channel: `{before.channel.name}`')
 
 @bot.event
 async def on_member_update(before, after):
