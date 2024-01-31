@@ -118,7 +118,7 @@ async def update_status_loop(server):
             elif status != 'offline' and previous_status == 'offline':
                 await log_last_seen(server.id, username, display_name, status)
 
-        await asyncio.sleep(10)
+        await asyncio.sleep(60)
 
 async def update_statuses_loop(server):
     previous_statuses = await get_previous_statuses(server)
@@ -144,7 +144,6 @@ async def update_statuses_loop(server):
             previous_status = previous_status_data['status']
             if status == 'idle' and status != previous_status:
                 channel = bot.get_channel(channel_id)
-                await channel.send(f'> :orange_circle: **{member.display_name}** Changed status to: `{status}`')
                 previous_statuses[username].update({'status': status})
                 continue
 
@@ -170,7 +169,7 @@ async def update_statuses_loop(server):
                     await channel.send(f'> :green_circle: **{display_name}** Changed status to: `{status}`')
 
                 previous_statuses[username].update({'status': status, 'last_online_time': last_online_time, 'status_changed_time': datetime.now()})
-        await asyncio.sleep(10)
+        await asyncio.sleep(60)
 
 
 @bot.event
