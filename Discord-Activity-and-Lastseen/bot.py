@@ -4,10 +4,12 @@ import asyncio
 from discord.ext import commands
 from datetime import datetime, timezone, timedelta
 import getpass
+import importlib
 
 bot_token = input("Enter Your Bot Token: ")
-server_id = int(input("Enter Your Server ID: "))
-channel_id = int(input("Enter Your Channel ID: "))
+server_id = input("Enter Your Server ID: ")
+channel_id = input("Enter Your Channel ID: ")
+show_idle = input("Post idle activity (Y/N): ")
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
@@ -29,6 +31,7 @@ async def log_status(server):
         
 async def log_last_seen(server_id, username, display_name, status):
     last_seen_data = {}
+    channel = bot.get_channel(channel_id)
 
     try:
         with open(f'lastseen_{server_id}.json', 'r') as last_seen_file:
@@ -40,37 +43,15 @@ async def log_last_seen(server_id, username, display_name, status):
         timestamp_utc = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
         last_seen_data[username] = timestamp_utc
         last_seen_data[display_name] = timestamp_utc
-        print(f'{display_name} went offline')
+        await channel.send(f'> :red_circle: **{display_name}** Went Offline')
     else:
         last_seen_data[username] = 'Online Now'
         last_seen_data[display_name] = 'Online Now'
-        print(f'{display_name} is online')
+        await channel.send(f'> :green_circle: **{display_name}** Is Now Online - Status:`{status}`')
 
     with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
-
-async def log_member_statuses(server):
-    log_data = []
-
-    for member in server.members:
-        member_data = {
-            'username': member.name,
-            'display_name': member.display_name,
-            'status': str(member.status),
-            'last_online_time': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC'),
-            'status_changed_time': None
-        }
-        log_data.append(member_data)
-
-    with open(f'logs_{server.id}.json', 'w') as log_file:
-        json.dump(log_data, log_file, indent=4)
-
-async def get_previous_statuses(server):
-    try:
-        with open(f'logs_{server.id}.json', 'r') as log_file:
-            return {entry['username']: entry for entry in json.load(log_file)}
-    except FileNotFoundError:
-        return {}
+        
     
 async def update_last_seen_online(server):
     last_seen_data = {}
@@ -89,15 +70,16 @@ async def update_last_seen_online(server):
         if status != 'offline':
             last_seen_data[username] = 'Online Now'
             last_seen_data[display_name] = 'Online Now'
-            print(f'{member.name} Online Now')
 
     with open(f'lastseen_{server.id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
         
         
 async def update_status_loop(server):
+        
     while True:
         previous_statuses = {}
+        channel = bot.get_channel(channel_id)
 
         try:
             with open(f'seen_{server.id}.json', 'r') as log_file:
@@ -113,75 +95,31 @@ async def update_status_loop(server):
             status = str(member.status)
             previous_status = previous_statuses.get(username, 'offline')
 
-            if status == 'offline' and previous_status != 'offline':
-                await log_last_seen(server.id, username, display_name, status)
-            elif status != 'offline' and previous_status == 'offline':
-                await log_last_seen(server.id, username, display_name, status)
-
-        await asyncio.sleep(60)
-
-async def update_statuses_loop(server):
-    previous_statuses = await get_previous_statuses(server)
-
-    for member in server.members:
-        username = member.name
-        display_name = member.display_name
-        status = str(member.status)
-
-        last_online_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-        previous_statuses.setdefault(username, {'status': 'offline', 'last_online_time': last_online_time, 'status_changed_time': None})
-        previous_statuses[username].update({'status': status, 'last_online_time': last_online_time, 'status_changed_time': datetime.now()})
-
-    while True:
-        await log_member_statuses(server)
-
-        for member in server.members:
-            username = member.name
-            display_name = member.display_name
-            status = str(member.status)
-
-            previous_status_data = previous_statuses[username]
-            previous_status = previous_status_data['status']
-            if status == 'idle' and status != previous_status:
-                channel = bot.get_channel(channel_id)
-                previous_statuses[username].update({'status': status})
-                continue
-
-            if status == 'dnd' and status != previous_status:
-                channel = bot.get_channel(channel_id)
-                await channel.send(f'> :no_entry: **{member.display_name}** Changed status to: `do not disturb`')
-                previous_statuses[username].update({'status': status})
-                continue
-
-            last_online_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-            previous_last_online_time = previous_status_data['last_online_time']
-            status_changed_time = previous_status_data['status_changed_time']
-
-            if status != previous_status:
-                channel = bot.get_channel(channel_id)
-
-                if status == 'offline' and status_changed_time is not None:
-                    last_online_timestamp = datetime.strptime(previous_last_online_time, '%Y-%m-%d %H:%M:%S %Z').replace(tzinfo=timezone.utc)
-                    offline_duration = datetime.now(timezone.utc) - last_online_timestamp
-                    offline_message = f'> :red_circle: **{display_name}** Changed status to: `{status}` - Total online time:`{str(offline_duration).split(".")[0]}`'
-                    await channel.send(offline_message)
-                elif status_changed_time is not None:
-                    await channel.send(f'> :green_circle: **{display_name}** Changed status to: `{status}`')
-
-                previous_statuses[username].update({'status': status, 'last_online_time': last_online_time, 'status_changed_time': datetime.now()})
-        await asyncio.sleep(60)
-
+            if show_idle == 'y':
+                if status == 'offline' and previous_status != 'offline':
+                    await log_last_seen(server.id, username, display_name, status)
+                elif status != 'offline' and previous_status == 'offline':
+                    await log_last_seen(server.id, username, display_name, status)
+                elif status == 'idle' and previous_status != 'idle':
+                    await channel.send(f'> :orange_circle: **{member.display_name}** Went AFK - Status:`{status}`')
+                elif status == 'dnd' and previous_status != 'dnd':
+                    await channel.send(f'> :no_entry: **{member.display_name}** Do Not Disturb - Status:`{status}`')
+                elif status == 'online' and previous_status != 'online':
+                    await channel.send(f'> :green_circle: **{member.display_name}** Woke Up - Status:`{status}`')
+            else:
+                if status == 'offline' and previous_status != 'offline':
+                    await log_last_seen(server.id, username, display_name, status)
+                elif status != 'offline' and previous_status == 'offline':
+                    await log_last_seen(server.id, username, display_name, status)
+                
+        await asyncio.sleep(30)
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
-
     for server in bot.guilds:
-        await log_member_statuses(server)
         await log_status(server)
         await update_last_seen_online(server)
-
-        bot.loop.create_task(update_statuses_loop(server))
         bot.loop.create_task(update_status_loop(server))
 
 
@@ -208,11 +146,18 @@ async def last_seen(ctx, user_identifier: str):
             
             time_difference = now_utc - last_seen_timestamp
             time_difference_str = format_timedelta(time_difference)
-            
             await ctx.send(f'**{user_identifier}** was last seen online at: `{last_seen_time}` '
-                           f'(Approximately {time_difference_str} ago)')
+                           f'(Approximately `{time_difference_str}` ago)')
     except FileNotFoundError:
         await ctx.send('No last seen data available.')
+
+@bot.command(name='restart', hidden=True)
+async def restart(ctx):
+    await ctx.send('Restarting...')
+    for extension in bot.extensions.copy():
+        bot.unload_extension(extension)
+        bot.load_extension(extension)
+    await ctx.send('Restart complete.')
 
 def format_timedelta(td):
     days, seconds = td.days, td.seconds
