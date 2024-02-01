@@ -11,6 +11,7 @@ server_id = input("Enter Your Server ID: ")
 channel_id = input("Enter Your Channel ID: ")
 show_idle = input("Post idle activity (Y/N): ")
 
+serverid = server_id
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 bot.activity = discord.Game(name="/seen")
@@ -52,6 +53,9 @@ async def log_last_seen(server_id, username, display_name, status):
     with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
         
+    with open(f'lastseen_{serverid}.json', 'w') as last_seen_file:
+        json.dump(last_seen_data, last_seen_file, indent=4)
+        
     
 async def update_last_seen_online(server):
     last_seen_data = {}
@@ -72,6 +76,9 @@ async def update_last_seen_online(server):
             last_seen_data[display_name] = 'Online Now'
 
     with open(f'lastseen_{server.id}.json', 'w') as last_seen_file:
+        json.dump(last_seen_data, last_seen_file, indent=4)
+        
+    with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
         
         
