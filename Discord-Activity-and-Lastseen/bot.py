@@ -16,6 +16,21 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 bot.activity = discord.Game(name="/seen")
 
+async def log_online_at_startup(server):
+    last_seen_data = {}
+    for member in server.members:
+        username = member.name
+        display_name = member.display_name
+        status = str(member.status)
+
+        if status != 'offline':
+            last_seen_data[username] = 'Online Now'
+            last_seen_data[display_name] = 'Online Now'
+            last_seen_data[f"{display_name}_start_time"] = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+
+    with open(f'lastseen_{server.id}.json', 'w') as last_seen_file:
+        json.dump(last_seen_data, last_seen_file, indent=4)
+
 async def log_status(server):
     logs_data = []
 
@@ -29,7 +44,22 @@ async def log_status(server):
 
     with open(f'seen_{server.id}.json', 'w') as log_file:
         json.dump(logs_data, log_file, indent=4)
-        
+  
+async def update_total_time(server_id, username, display_name, time_delta):
+    total_time_data = {}
+
+    try:
+        with open('totaltime.json', 'r') as total_time_file:
+            total_time_data = json.load(total_time_file)
+    except FileNotFoundError:
+        pass
+
+    total_time_data[username] = total_time_data.get(username, 0) + time_delta.total_seconds()
+    total_time_data[display_name] = total_time_data.get(display_name, 0) + time_delta.total_seconds()
+
+    with open('totaltime.json', 'w') as total_time_file:
+        json.dump(total_time_data, total_time_file, indent=4)
+  
 async def log_last_seen(server_id, username, display_name, status):
     last_seen_data = {}
     channel = bot.get_channel(channel_id)
@@ -45,9 +75,17 @@ async def log_last_seen(server_id, username, display_name, status):
         last_seen_data[username] = timestamp_utc
         last_seen_data[display_name] = timestamp_utc
         await channel.send(f'> :red_circle: **{display_name}** Went Offline')
+
+        if display_name in last_seen_data:
+            start_time = last_seen_data.get(f"{display_name}_start_time")
+            if start_time:
+                last_seen_timestamp = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=timezone.utc)
+                time_delta = datetime.now(timezone.utc) - last_seen_timestamp
+                await update_total_time(server_id, username, display_name, time_delta)
     else:
         last_seen_data[username] = 'Online Now'
         last_seen_data[display_name] = 'Online Now'
+        last_seen_data[f"{display_name}_start_time"] = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
         await channel.send(f'> :green_circle: **{display_name}** Is Now Online - Status:`{status}`')
 
     with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
@@ -127,6 +165,7 @@ async def on_ready():
     for server in bot.guilds:
         await log_status(server)
         await update_last_seen_online(server)
+        await log_online_at_startup(server) 
         bot.loop.create_task(update_status_loop(server))
 
 
@@ -157,6 +196,22 @@ async def last_seen(ctx, user_identifier: str):
                            f'(Approximately `{time_difference_str}` ago)')
     except FileNotFoundError:
         await ctx.send('No last seen data available.')
+
+@bot.command(name='total')
+async def total_online_time(ctx, user_identifier: str):
+    server_id = ctx.guild.id
+
+    try:
+        with open('totaltime.json', 'r') as total_time_file:
+            total_time_data = json.load(total_time_file)
+        
+        display_name = user_identifier
+        total_time_seconds = total_time_data.get(display_name, 0)
+
+        total_time_str = format_timedelta(timedelta(seconds=total_time_seconds))
+        await ctx.send(f'Total online time for **{display_name}**: `{total_time_str}`')
+    except FileNotFoundError:
+        await ctx.send('No total online time data available.')
 
 @bot.command(name='restart', hidden=True)
 async def restart(ctx):
