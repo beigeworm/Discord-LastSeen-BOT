@@ -171,7 +171,8 @@ async def on_ready():
 
 @bot.command(name='seen')
 async def last_seen(ctx, user_identifier: str):
-    if user_mention := discord.utils.get(ctx.message.mentions, name=user_identifier):
+    user_mention = discord.utils.get(ctx.message.mentions, name=user_identifier)
+    if user_mention is not None:
         username = user_mention.name
         display_name = user_mention.display_name
     else:
