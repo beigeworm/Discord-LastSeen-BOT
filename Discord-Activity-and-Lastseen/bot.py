@@ -75,7 +75,8 @@ async def log_last_seen(server_id, username, display_name, status):
         timestamp_utc = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
         last_seen_data[username] = timestamp_utc
         last_seen_data[display_name] = timestamp_utc
-        await channel.send(f'> :red_circle: **{display_name}** Went Offline')
+        if show_updates == 'y':
+            await channel.send(f'> :red_circle: **{display_name}** Went Offline')
 
         if display_name in last_seen_data:
             start_time = last_seen_data.get(f"{display_name}_start_time")
@@ -87,7 +88,8 @@ async def log_last_seen(server_id, username, display_name, status):
         last_seen_data[username] = 'Online Now'
         last_seen_data[display_name] = 'Online Now'
         last_seen_data[f"{display_name}_start_time"] = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-        await channel.send(f'> :green_circle: **{display_name}** Is Now Online - Status:`{status}`')
+        if show_updates == 'y':
+            await channel.send(f'> :green_circle: **{display_name}** Is Now Online - Status:`{status}`')
 
     with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
@@ -159,7 +161,7 @@ async def update_status_loop(server):
                     await channel.send(f'> :no_entry: **{member.display_name}** Do Not Disturb - Status:`{status}`')
                 elif status == 'online' and previous_status != 'online':
                     await channel.send(f'> :green_circle: **{member.display_name}** Woke Up - Status:`{status}`')
-            if show_updates == 'y':
+            else:
                 if status == 'offline' and previous_status != 'offline':
                     await log_last_seen(server.id, username, display_name, status)
                 elif status != 'offline' and previous_status == 'offline':
