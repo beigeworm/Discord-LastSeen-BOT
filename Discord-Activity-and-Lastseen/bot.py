@@ -10,6 +10,7 @@ bot_token = input("Enter Your Bot Token: ")
 server_id = input("Enter Your Server ID: ")
 channel_id = input("Enter Your Channel ID: ")
 show_idle = input("Post idle activity (Y/N): ")
+show_updates = input("Post online/offline activity (Y/N): ")
 
 serverid = server_id
 intents = discord.Intents.all()
@@ -118,8 +119,15 @@ async def update_last_seen_online(server):
         
     with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
+  
+async def change_activity_loop():
+    while True:
+        bot.activity = discord.Game(name="/seen")
+        await asyncio.sleep(60)
         
-        
+        bot.activity = discord.Game(name="/total")
+        await asyncio.sleep(60)
+  
 async def update_status_loop(server):
         
     while True:
@@ -151,7 +159,7 @@ async def update_status_loop(server):
                     await channel.send(f'> :no_entry: **{member.display_name}** Do Not Disturb - Status:`{status}`')
                 elif status == 'online' and previous_status != 'online':
                     await channel.send(f'> :green_circle: **{member.display_name}** Woke Up - Status:`{status}`')
-            else:
+            if show_updates == 'y':
                 if status == 'offline' and previous_status != 'offline':
                     await log_last_seen(server.id, username, display_name, status)
                 elif status != 'offline' and previous_status == 'offline':
@@ -167,12 +175,31 @@ async def on_ready():
         await update_last_seen_online(server)
         await log_online_at_startup(server) 
         bot.loop.create_task(update_status_loop(server))
+        bot.loop.create_task(change_activity_loop())
 
+@bot.command(name='toggleidle')
+async def toggle_idle(ctx):
+    global show_idle
+    if show_idle == 'n':
+        show_idle = 'y'
+        await ctx.send('**Now showing idle status updates.**')
+    else:
+        show_idle = 'n'
+        await ctx.send('**Idle status updates hidden.**')
+        
+@bot.command(name='toggleonline')
+async def toggle_updates(ctx):
+    global show_updates
+    if show_updates == 'n':
+        show_updates = 'y'
+        await ctx.send('**Now showing online/offline status updates.**')
+    else:
+        show_updates = 'n'
+        await ctx.send('**online/offline status updates hidden.**')
 
 @bot.command(name='seen')
 async def last_seen(ctx, user_identifier: str):
-    user_mention = discord.utils.get(ctx.message.mentions, name=user_identifier)
-    if user_mention is not None:
+    if user_mention := discord.utils.get(ctx.message.mentions, name=user_identifier):
         username = user_mention.name
         display_name = user_mention.display_name
     else:
@@ -186,15 +213,15 @@ async def last_seen(ctx, user_identifier: str):
         last_seen_time = last_seen_data.get(username, last_seen_data.get(display_name, '`Not available` '))
         
         if last_seen_time == 'Online Now':
-            await ctx.send(f' :green_circle: **{user_identifier}** is currently online.')
+            await ctx.send(f'> :green_circle: **{user_identifier}** is currently online.')
         else:
             last_seen_timestamp = datetime.strptime(last_seen_time, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=timezone.utc)
             now_utc = datetime.now(timezone.utc)
             
             time_difference = now_utc - last_seen_timestamp
             time_difference_str = format_timedelta(time_difference)
-            await ctx.send(f'**{user_identifier}** was last seen online at: `{last_seen_time}` '
-                           f'(Approximately `{time_difference_str}` ago)')
+            await ctx.send(f'> **{user_identifier}** was last seen online at: `{last_seen_time}` '
+                           f'[`{time_difference_str}` ago]')
     except FileNotFoundError:
         await ctx.send('No last seen data available.')
 
@@ -210,7 +237,7 @@ async def total_online_time(ctx, user_identifier: str):
         total_time_seconds = total_time_data.get(display_name, 0)
 
         total_time_str = format_timedelta(timedelta(seconds=total_time_seconds))
-        await ctx.send(f'Total online time for **{display_name}**: `{total_time_str}`')
+        await ctx.send(f'> Total online time for **{display_name}**: `{total_time_str}`')
     except FileNotFoundError:
         await ctx.send('No total online time data available.')
 
