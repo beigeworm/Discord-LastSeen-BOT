@@ -24,6 +24,7 @@ async def log_online_at_startup(server):
         username = member.name
         display_name = member.display_name
         status = str(member.status)
+
         if status != 'offline':
             last_seen_data[username] = 'Online Now'
             last_seen_data[display_name] = 'Online Now'
@@ -370,9 +371,19 @@ async def restart(ctx):
 async def seenbothelp(ctx):
     help_embed = discord.Embed(title='COMMAND LIST', description='List of all available commands and their descriptions', color=discord.Color.green())
 
-    help_embed.add_field(name="Command", value="------\n/seenbothelp\n/lastseen\n/activeleaderboard\n/onlineleaderboard\n/totalonline\n/totalactive\n------\n/toggleonline\n/toggleidle\n/restart", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/ls\n/leaderboard\n\n/online\n/active\n------\n/to\n/ti\n", inline=True)
-    help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.\nDisplay total online time for a member.\nDisplay total active time for a member.\n------\nToggle online/offline updates. (admin only)\nToggle idle updates. (admin only)\nSoft Restart the bot. (admin only)", inline=True)
+    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen\n/totalonline\n/totalactive\n/activeleaderboard\n/onlineleaderboard", inline=True)
+    help_embed.add_field(name="Alias", value="------\n\n/ls\n/online\n/active\n/leaderboard\n", inline=True)
+    help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.", inline=True)
+    await ctx.send(embed=help_embed)
+
+@bot.command(name='adminhelp', help='List all admin commands and their descriptions')
+@commands.has_permissions(administrator=True)
+async def seenbothelp(ctx):
+    help_embed = discord.Embed(title='ADMIN COMMAND LIST', description='List of all available admin commands and their descriptions', color=discord.Color.green())
+
+    help_embed.add_field(name="Command", value="------\n/adminhelp\n/toggleonline\n/toggleidle\n/restart", inline=True)
+    help_embed.add_field(name="Alias", value="------\n\n/to\n/ti\n", inline=True)
+    help_embed.add_field(name="Description", value="------\nList all admin commands and descriptions.\nToggle online/offline updates. (admin only)\nToggle idle updates. (admin only)\nSoft Restart the bot. (admin only)", inline=True)
     await ctx.send(embed=help_embed)
 
 def format_timedelta(td):
