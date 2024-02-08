@@ -369,10 +369,10 @@ async def restart(ctx):
 
 @bot.command(name='seenhelp', help='List all commands and their descriptions')
 async def seenbothelp(ctx):
-    help_embed = discord.Embed(title='COMMAND LIST', description='List of all available commands and their descriptions', color=discord.Color.green())
+    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member and actvity leaderboards. Use the commands below.  \n\n[user] can be a username OR display name.', color=discord.Color.green())
 
-    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen\n/totalonline\n/totalactive\n/activeleaderboard\n/onlineleaderboard", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/ls\n/online\n/active\n/leaderboard\n", inline=True)
+    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard", inline=True)
+    help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n", inline=True)
     help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.", inline=True)
     await ctx.send(embed=help_embed)
 
