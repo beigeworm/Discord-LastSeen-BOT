@@ -16,7 +16,7 @@ show_updates = input("Post online/offline activity (Y/N): ")
 serverid = server_id
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
-bot.activity = discord.Game(name="/lastseen")
+bot.activity = discord.Game(name="/seenhelp")
 
 async def log_online_at_startup(server):
     last_seen_data = {}
@@ -189,15 +189,6 @@ async def update_last_seen_online(server):
     with open(f'lastseen_{server_id}.json', 'w') as last_seen_file:
         json.dump(last_seen_data, last_seen_file, indent=4)
   
-async def change_activity_loop():
-    while True:
-        bot.activity = discord.Game(name="/lastseen")
-        await asyncio.sleep(360)
-        bot.activity = discord.Game(name="/totalonline")
-        await asyncio.sleep(360)
-        bot.activity = discord.Game(name="/leaderboard")
-        await asyncio.sleep(360)
-  
 async def update_status_loop(server):
     while True:
         previous_statuses = {}
@@ -252,7 +243,6 @@ async def on_ready():
         await update_last_seen_online(server)
         await log_online_at_startup(server) 
         bot.loop.create_task(update_status_loop(server))
-        bot.loop.create_task(change_activity_loop())
 
 @bot.command(name='toggleidle', aliases=['ti'], help='Toggle showing idle updates for members. (admin only)')
 @commands.has_permissions(administrator=True)
@@ -415,6 +405,6 @@ async def on_message_delete(message):
     channel = bot.get_channel(channel_id)
     author = message.author
     content = message.content
-    await channel.send(f'> :no_entry_sign: **{author.display_name}** Deleted the message: `{content}`')
+    await channel.send(f'> :no_entry_sign: DELETED MESSAGE :no_entry_sign: Member: **{author.display_name}** Content: `{content}`')
 
 bot.run(bot_token)
