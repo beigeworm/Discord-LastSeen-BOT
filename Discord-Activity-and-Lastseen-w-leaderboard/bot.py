@@ -24,7 +24,6 @@ async def log_online_at_startup(server):
         username = member.name
         display_name = member.display_name
         status = str(member.status)
-
         if status != 'offline':
             last_seen_data[username] = 'Online Now'
             last_seen_data[display_name] = 'Online Now'
@@ -57,7 +56,8 @@ async def update_total_time(server_id, username, display_name, time_delta):
         pass
 
     total_time_data[username] = total_time_data.get(username, 0) + time_delta.total_seconds()
-    total_time_data[display_name] = total_time_data.get(display_name, 0) + time_delta.total_seconds()
+    if username != display_name:
+        total_time_data[display_name] = total_time_data.get(display_name, 0) + time_delta.total_seconds()
     with open('totaltime.json', 'w') as total_time_file:
         json.dump(total_time_data, total_time_file, indent=4)
 
@@ -81,7 +81,8 @@ async def update_total_online_time(server_id, username, display_name, time_delta
         pass
 
     total_online_time_data[username] = total_online_time_data.get(username, 0) + time_delta.total_seconds()
-    total_online_time_data[display_name] = total_online_time_data.get(display_name, 0) + time_delta.total_seconds()
+    if username != display_name:
+        total_online_time_data[display_name] = total_online_time_data.get(display_name, 0) + time_delta.total_seconds()
     with open('totalonlinetime.json', 'w') as total_online_time_file:
         json.dump(total_online_time_data, total_online_time_file, indent=4)
     
