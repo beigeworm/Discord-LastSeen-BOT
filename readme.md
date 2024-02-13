@@ -20,17 +20,17 @@ This Discord bot is designed to monitor server activity, provide activity leader
 
 `pip install git+https://github.com/ytdl-org/youtube-dl` (this is the most up to date version)
 
-**FFMPEG INSTALL**
-- Windows : get ffmpeg - https://ffmpeg.org/download.html
-- linux : sudo apt install ffmpeg -y
+4. Install ffmpeg.
+- Windows : get ffmpeg and place ffmpeg.exe in the same directory as the script - https://ffmpeg.org/download.html
+- Linux : in a termial type - `sudo apt install ffmpeg -y`
 
-4. Create a Discord bot and obtain the bot token.
-5. Obtain your Discord server ID and channel ID.
-6. Update the following variables in the code with your bot token, server ID, and channel ID:
+5. Create a Discord bot and obtain the bot token.
+6. Obtain your Discord server ID and channel ID.
+7. Update the following variables in the code with your bot token, server ID, and channel ID:
 - `bot_token`
 - `server_id`
 - `channel_id`
-7. Run the bot script:
+8. Run the bot script:
 
 `python ./bot.py`
 
