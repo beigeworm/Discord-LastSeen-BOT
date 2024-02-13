@@ -384,9 +384,9 @@ async def seenbothelp(ctx):
 async def seenbothelp(ctx):
     help_embed = discord.Embed(title='ADMIN COMMAND LIST', description='List of all available admin commands and their descriptions', color=discord.Color.green())
 
-    help_embed.add_field(name="Command", value="------\n/adminhelp\n/toggleonline\n/toggleidle\n/restart", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/to\n/ti\n", inline=True)
-    help_embed.add_field(name="Description", value="------\nList all admin commands and descriptions.\nToggle online/offline updates. (admin only)\nToggle idle updates. (admin only)\nSoft Restart the bot. (admin only)", inline=True)
+    help_embed.add_field(name="Command", value="------\n/adminhelp\n/toggleonline\n/toggleidle\n/restart\n/toggleplayer", inline=True)
+    help_embed.add_field(name="Alias", value="------\n\n/to\n/ti\n\n/tp", inline=True)
+    help_embed.add_field(name="Description", value="------\nList all admin commands and descriptions.\nToggle online/offline updates. (admin only)\nToggle idle updates. (admin only)\nSoft Restart the bot. (admin only)\nToggle enable music player.", inline=True)
     await ctx.send(embed=help_embed)
 
 def format_timedelta(td):
