@@ -373,8 +373,8 @@ async def restart(ctx):
 async def seenbothelp(ctx):
     help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.\n\n **Tracking started : 8th Feb 2024** \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
 
-    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play\n/stop", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p\n/s", inline=True)
+    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play [url]\n/stop", inline=True)
+    help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p [url]\n/s", inline=True)
     help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.\nPlay a song from YouTube.\nStop the current song.", inline=True)
     await ctx.send(embed=help_embed)
 
@@ -402,13 +402,13 @@ async def play(ctx, url):
         try:
             await voice_channel.connect()
             voice_client = ctx.guild.voice_client
-            os.system(f'youtube-dl -x --audio-format mp3 {url} -o /var/www/bots/egieBOT/temp.mp3')
+            os.system(f'youtube-dl -x --audio-format mp3 {url} -o temp.mp3')
             await asyncio.sleep(3)
-            voice_client.play(discord.FFmpegPCMAudio('/var/www/bots/egieBOT/temp.mp3'), after=lambda e: print('done', e))
-            await ctx.send(f'> :musical_note: Now playing... :musical_note: ')
+            voice_client.play(discord.FFmpegPCMAudio('temp.mp3'), after=lambda e: print('done', e))
+            await ctx.send(f'> :musical_note:  Now playing...  :musical_note: ')
             while voice_client.is_playing():
                 await asyncio.sleep(1)
-            os.remove('/var/www/bots/egieBOT/temp.mp3')
+            os.remove('temp.mp3')
             await voice_client.disconnect()
         except Exception as e:
             await ctx.send(f'An error occurred: {e}')
