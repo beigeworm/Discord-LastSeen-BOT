@@ -10,8 +10,8 @@ import os
 import ffmpeg
 
 bot_token = 'YOUR_BOT_TOKEN_HERE'
-server_id = 8573489389457384
-channel_id = 70302382934834923
+server_id = 8573489389457384 #example
+channel_id = 70302382934834923 #example
 show_idle = 'y'
 show_updates = 'y'
 music_player = 'y'
