@@ -415,7 +415,7 @@ async def play(ctx, url):
             try:
                 await voice_channel.connect()
                 voice_client = ctx.guild.voice_client
-                os.system(f'youtube-dl -x --audio-format mp3 {url} -o temp.mp3')
+                os.system(f'youtube-dl --force-ipv4 -x --audio-format mp3 {url} -o temp.mp3')
                 await asyncio.sleep(3)
                 voice_client.play(discord.FFmpegPCMAudio('temp.mp3'), after=lambda e: print('done', e))
                 await ctx.send(f'> :musical_note:  Now playing...  :musical_note: ')
