@@ -359,8 +359,8 @@ async def active_leaders(ctx):
                 total_time_str = format_timedelta(timedelta(seconds=total_time))
                 leaderboard_message += f"{index}. {display_name} : `{total_time_str}`\n"
     
-                leaderboard_message += f"\n"
-                await ctx.send(leaderboard_message)
+            leaderboard_message += f"\n"
+            await ctx.send(leaderboard_message)
         except FileNotFoundError:
             await ctx.send('No total active time data available.')
 
@@ -381,8 +381,8 @@ async def active_leaders(ctx):
                 total_time_str = format_timedelta(timedelta(seconds=total_time))
                 leaderboard_message += f"{index}. {display_name} : `{total_time_str}`\n"
     
-                leaderboard_message += f"\n"
-                await ctx.send(leaderboard_message)
+            leaderboard_message += f"\n"
+            await ctx.send(leaderboard_message)
         except FileNotFoundError:
             await ctx.send('No total online time data available.')
 
