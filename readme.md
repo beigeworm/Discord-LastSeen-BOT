@@ -14,11 +14,11 @@ This Discord bot is designed to monitor server activity, provide activity leader
 2. Install Python if you haven't already (Python 3.8 or higher is required).
 3. Install dependencies using pip:
 
-> pip install discord.py
+`pip install discord.py`
 
-> pip install ffmpeg
+`pip install ffmpeg`
 
-> pip install git+https://github.com/ytdl-org/youtube-dl
+`pip install git+https://github.com/ytdl-org/youtube-dl` (this is the most up to date version)
 
 **FFMPEG INSTALL**
 - Windows : get ffmpeg - https://ffmpeg.org/download.html
@@ -32,7 +32,7 @@ This Discord bot is designed to monitor server activity, provide activity leader
 - `channel_id`
 7. Run the bot script:
 
-> python ./bot.py
+`python ./bot.py`
 
 ## Commands
 - **/seenhelp**: List all commands and their descriptions.
