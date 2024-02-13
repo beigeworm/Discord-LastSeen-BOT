@@ -371,7 +371,7 @@ async def restart(ctx):
 
 @bot.command(name='seenhelp', help='List all commands and their descriptions')
 async def seenbothelp(ctx):
-    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.  \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
+    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.\n\n **Tracking started : 8th Feb 2024** \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
 
     help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play\n/stop", inline=True)
     help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p\n/s", inline=True)
