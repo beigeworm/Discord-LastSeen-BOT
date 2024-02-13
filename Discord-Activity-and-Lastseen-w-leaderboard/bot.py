@@ -14,6 +14,7 @@ server_id = input("Enter Your Server ID: ")
 channel_id = input("Enter Your Channel ID: ")
 show_idle = input("Post idle activity (Y/N): ")
 show_updates = input("Post online/offline activity (Y/N): ")
+music_player = 'y'
 
 serverid = server_id
 intents = discord.Intents.all()
@@ -395,24 +396,38 @@ def format_timedelta(td):
     seconds = seconds % 60
     return f"{hours} hrs, {minutes} mins, {seconds} secs"
 
+@bot.command(name='toggleplayer', aliases=['tp'])
+@commands.has_permissions(administrator=True)
+async def toggle_player(ctx):
+    global music_player
+    if music_player == 'n':
+        music_player = 'y'
+        await ctx.send('**Music player enabled.**')
+    else:
+        music_player = 'n'
+        await ctx.send('**Music player disabled.**')
+
 @bot.command(name='play', aliases=['p'])
 async def play(ctx, url):
     voice_channel = ctx.author.voice.channel
     if voice_channel:
-        try:
-            await voice_channel.connect()
-            voice_client = ctx.guild.voice_client
-            os.system(f'youtube-dl -x --audio-format mp3 {url} -o temp.mp3')
-            await asyncio.sleep(3)
-            voice_client.play(discord.FFmpegPCMAudio('temp.mp3'), after=lambda e: print('done', e))
-            await ctx.send(f'> :musical_note:  Now playing...  :musical_note: ')
-            while voice_client.is_playing():
-                await asyncio.sleep(1)
-            os.remove('temp.mp3')
-            await voice_client.disconnect()
-        except Exception as e:
-            await ctx.send(f'An error occurred: {e}')
-            await voice_client.disconnect()
+        if music_player == 'y':
+            try:
+                await voice_channel.connect()
+                voice_client = ctx.guild.voice_client
+                os.system(f'youtube-dl -x --audio-format mp3 {url} -o temp.mp3')
+                await asyncio.sleep(3)
+                voice_client.play(discord.FFmpegPCMAudio('temp.mp3'), after=lambda e: print('done', e))
+                await ctx.send(f'> :musical_note:  Now playing...  :musical_note: ')
+                while voice_client.is_playing():
+                    await asyncio.sleep(1)
+                os.remove('temp.mp3')
+                await voice_client.disconnect()
+            except Exception as e:
+                await ctx.send(f'An error occurred: {e}')
+                await voice_client.disconnect()
+        else:
+            await ctx.send("Music player is disabled.")
     else:
         await ctx.send("You need to be in a voice channel to use this command.")
 
