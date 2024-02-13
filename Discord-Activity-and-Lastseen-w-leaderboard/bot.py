@@ -371,7 +371,7 @@ async def restart(ctx):
 
 @bot.command(name='seenhelp', help='List all commands and their descriptions')
 async def seenbothelp(ctx):
-    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.\n\n **Tracking started : 8th Feb 2024** \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
+    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.\n\n **Tracking started : 13th Feb 2024** \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
 
     help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play [url]\n/stop", inline=True)
     help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p [url]\n/s", inline=True)
@@ -412,6 +412,7 @@ async def play(ctx, url):
             await voice_client.disconnect()
         except Exception as e:
             await ctx.send(f'An error occurred: {e}')
+            await voice_client.disconnect()
     else:
         await ctx.send("You need to be in a voice channel to use this command.")
 
