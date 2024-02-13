@@ -6,6 +6,8 @@ from datetime import datetime, timezone, timedelta
 import getpass
 import importlib
 from collections import Counter
+import os
+import ffmpeg
 
 bot_token = input("Enter Your Bot Token: ")
 server_id = input("Enter Your Server ID: ")
@@ -246,7 +248,7 @@ async def on_ready():
         await log_online_at_startup(server) 
         bot.loop.create_task(update_status_loop(server))
 
-@bot.command(name='toggleidle', aliases=['ti'], help='Toggle showing idle updates for members. (admin only)')
+@bot.command(name='toggleidle', aliases=['ti'])
 @commands.has_permissions(administrator=True)
 async def toggle_idle(ctx):
     global show_idle
@@ -257,7 +259,7 @@ async def toggle_idle(ctx):
         show_idle = 'n'
         await ctx.send('**Idle status updates hidden.**')
         
-@bot.command(name='toggleonline', aliases=['to'], help='Toggle showing online/offline updates for members. (admin only)')
+@bot.command(name='toggleonline', aliases=['to'])
 @commands.has_permissions(administrator=True)
 async def toggle_updates(ctx):
     global show_updates
@@ -268,7 +270,7 @@ async def toggle_updates(ctx):
         show_updates = 'n'
         await ctx.send('**online/offline status updates hidden.**')
 
-@bot.command(name='lastseen', aliases=['ls'], help='Display last seen time for a member.')
+@bot.command(name='lastseen', aliases=['ls'])
 async def last_seen(ctx, user_identifier: str):
     if user_mention := discord.utils.get(ctx.message.mentions, name=user_identifier):
         username = user_mention.name
@@ -294,7 +296,7 @@ async def last_seen(ctx, user_identifier: str):
     except FileNotFoundError:
         await ctx.send('No last seen data available.')
 
-@bot.command(name='totalonline', aliases=['online'], help='Display total online time for a member.')
+@bot.command(name='totalonline', aliases=['online'])
 async def total_online_time(ctx, user_identifier: str):
     server_id = ctx.guild.id
     try:
@@ -308,7 +310,7 @@ async def total_online_time(ctx, user_identifier: str):
     except FileNotFoundError:
         await ctx.send('No total online time data available.')
         
-@bot.command(name='totalactive', aliases=['active'], help='Display total active time for a member.')
+@bot.command(name='totalactive', aliases=['active'])
 async def total_online_time(ctx, user_identifier: str):
     server_id = ctx.guild.id
     try:
@@ -322,7 +324,7 @@ async def total_online_time(ctx, user_identifier: str):
     except FileNotFoundError:
         await ctx.send('No total active time data available.')
 
-@bot.command(name='activeleaderboard', aliases=['leaderboard'], help='Display top 10 most active members.')
+@bot.command(name='activeleaderboard', aliases=['leaderboard'])
 async def active_leaders(ctx):
     try:
         with open('activeleaderboard.json', 'r') as total_time_file:
@@ -340,7 +342,7 @@ async def active_leaders(ctx):
     except FileNotFoundError:
         await ctx.send('No total active time data available.')
 
-@bot.command(name='onlineleaderboard', help='Display top 10 online members.')
+@bot.command(name='onlineleaderboard')
 async def active_leaders(ctx):
     try:
         with open('onlineleaderboard.json', 'r') as total_time_file:
@@ -358,7 +360,7 @@ async def active_leaders(ctx):
     except FileNotFoundError:
         await ctx.send('No total online time data available.')
 
-@bot.command(name='restart', help='Soft Restart the bot. (admin only)')
+@bot.command(name='restart')
 @commands.has_permissions(administrator=True)
 async def restart(ctx):
     await ctx.send('Restarting...')
@@ -369,14 +371,14 @@ async def restart(ctx):
 
 @bot.command(name='seenhelp', help='List all commands and their descriptions')
 async def seenbothelp(ctx):
-    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member and actvity leaderboards. Use the commands below.  \n\n[user] can be a username OR display name.', color=discord.Color.green())
+    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.  \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
 
-    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n", inline=True)
-    help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.", inline=True)
+    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play\n/stop", inline=True)
+    help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p\n/s", inline=True)
+    help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.\nPlay a song from YouTube.\nStop the current song.", inline=True)
     await ctx.send(embed=help_embed)
 
-@bot.command(name='adminhelp', help='List all admin commands and their descriptions')
+@bot.command(name='adminhelp')
 @commands.has_permissions(administrator=True)
 async def seenbothelp(ctx):
     help_embed = discord.Embed(title='ADMIN COMMAND LIST', description='List of all available admin commands and their descriptions', color=discord.Color.green())
@@ -392,6 +394,48 @@ def format_timedelta(td):
     minutes = (seconds % 3600) // 60
     seconds = seconds % 60
     return f"{hours} hrs, {minutes} mins, {seconds} secs"
+
+@bot.command(name='play', aliases=['p'])
+async def play(ctx, url):
+    voice_channel = ctx.author.voice.channel
+    if voice_channel:
+        try:
+            await voice_channel.connect()
+            voice_client = ctx.guild.voice_client
+
+            # Download the video as mp3 using FFmpeg
+            os.system(f'youtube-dl -x --audio-format mp3 {url} -o /var/www/bots/egieBOT/temp.mp3')
+
+            await asyncio.sleep(3)
+
+            # Play the downloaded mp3
+            voice_client.play(discord.FFmpegPCMAudio('/var/www/bots/egieBOT/temp.mp3'), after=lambda e: print('done', e))
+            await ctx.send(f'Now playing...')
+
+            while voice_client.is_playing():
+                await asyncio.sleep(1)
+
+            # Delete the temporary mp3 file
+            os.remove('/var/www/bots/egieBOT/temp.mp3')
+
+            # Disconnect from the voice channel after playback finishes
+            await voice_client.disconnect()
+        except Exception as e:
+            await ctx.send(f'An error occurred: {e}')
+    else:
+        await ctx.send("You need to be in a voice channel to use this command.")
+
+@bot.command(name='stop', aliases=['s'])
+async def stop(ctx):
+    voice_client = ctx.guild.voice_client
+    if voice_client:
+        if voice_client.is_playing():
+            voice_client.stop()
+            await ctx.send("Playback stopped.")
+        else:
+            await ctx.send("Nothing is playing.")
+    else:
+        await ctx.send("I'm not in a voice channel.")
 
 @bot.event
 async def on_voice_state_update(member, before, after):
