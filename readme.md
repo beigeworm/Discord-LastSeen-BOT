@@ -45,5 +45,6 @@ This Discord bot is designed to monitor server activity, provide activity leader
 - **/stop** (Alias: /s): Stop the current song.
 - **/toggleidle** (Admin only): Toggle idle status updates.
 - **/toggleonline** (Admin only): Toggle online/offline status updates.
+- **/toggleplayer** (Admin Only): Toggle enable/disable music player.
 - **/restart** (Admin only): Soft restart the bot.
 - **/adminhelp**: List all admin commands and their descriptions.
