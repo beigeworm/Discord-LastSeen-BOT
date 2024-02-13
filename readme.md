@@ -34,6 +34,8 @@ This Discord bot is designed to monitor server activity, provide activity leader
 
 `python ./bot.py`
 
+> Alternatively on Windows you can use ActivityBOT.exe (you will need ffmpeg.exe in the same directory). Bot token and configuration setup is within the exe program.
+
 ## Commands
 - **/seenhelp**: List all commands and their descriptions.
 - **/lastseen [user]** (Alias: /ls): Display last seen time for a member.
