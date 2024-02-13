@@ -402,23 +402,13 @@ async def play(ctx, url):
         try:
             await voice_channel.connect()
             voice_client = ctx.guild.voice_client
-
-            # Download the video as mp3 using FFmpeg
             os.system(f'youtube-dl -x --audio-format mp3 {url} -o /var/www/bots/egieBOT/temp.mp3')
-
             await asyncio.sleep(3)
-
-            # Play the downloaded mp3
             voice_client.play(discord.FFmpegPCMAudio('/var/www/bots/egieBOT/temp.mp3'), after=lambda e: print('done', e))
-            await ctx.send(f'Now playing...')
-
+            await ctx.send(f'> :musical_note: Now playing... :musical_note: ')
             while voice_client.is_playing():
                 await asyncio.sleep(1)
-
-            # Delete the temporary mp3 file
             os.remove('/var/www/bots/egieBOT/temp.mp3')
-
-            # Disconnect from the voice channel after playback finishes
             await voice_client.disconnect()
         except Exception as e:
             await ctx.send(f'An error occurred: {e}')
