@@ -15,7 +15,9 @@ This Discord bot is designed to monitor server activity, provide activity leader
 3. Install dependencies using pip:
 
 > pip install discord.py
+
 > pip install ffmpeg
+
 > pip install git+https://github.com/ytdl-org/youtube-dl
 
 **FFMPEG INSTALL**
@@ -32,7 +34,7 @@ This Discord bot is designed to monitor server activity, provide activity leader
 
 > python ./bot.py
 
-## Commands and Descriptions
+## Commands
 - **/seenhelp**: List all commands and their descriptions.
 - **/lastseen [user]** (Alias: /ls): Display last seen time for a member.
 - **/totalonline [user]** (Alias: /online): Display total online time for a member.
