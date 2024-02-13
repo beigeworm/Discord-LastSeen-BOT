@@ -9,11 +9,11 @@ from collections import Counter
 import os
 import ffmpeg
 
-bot_token = input("Enter Your Bot Token: ")
-server_id = input("Enter Your Server ID: ")
-channel_id = input("Enter Your Channel ID: ")
-show_idle = input("Post idle activity (Y/N): ")
-show_updates = input("Post online/offline activity (Y/N): ")
+bot_token = 'YOUR_BOT_TOKEN_HERE'
+server_id = 8573489389457384
+channel_id = 70302382934834923
+show_idle = 'y'
+show_updates = 'y'
 music_player = 'y'
 
 serverid = server_id
