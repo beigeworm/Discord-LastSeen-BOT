@@ -12,7 +12,7 @@ import ffmpeg
 bot_token = 'YOUR_BOT_TOKEN_HERE'
 server_id = 8573489389457384 #example (where to recieve activity updates)
 channel_id = 70302382934834923 #example (where to recieve activity updates)
-commands_channel_id = 1192158425841414224 #example (where to only accept commands from)
+commands_channel_id = 1192158425841414224 #example (where to only accept commands from) (optional)
 any_channel = 'y' # accept commands from any channel or only the channel 'commands_channel_id'
 show_idle = 'y' 
 show_updates = 'y'
