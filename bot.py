@@ -10,11 +10,14 @@ import os
 import ffmpeg
 
 bot_token = 'YOUR_BOT_TOKEN_HERE'
-server_id = 8573489389457384 #example
-channel_id = 70302382934834923 #example
-show_idle = 'y'
+server_id = 8573489389457384 #example (where to recieve activity updates)
+channel_id = 70302382934834923 #example (where to recieve activity updates)
+commands_channel_id = 1192158425841414224 #example (where to only accept commands from)
+any_channel = 'n' # accept commands from any channel or only the channel 'commands_channel_id'
+show_idle = 'y' 
 show_updates = 'y'
 music_player = 'y'
+tracking_start_date = datetime.now().strftime("%dth %b %Y")
 
 serverid = server_id
 intents = discord.Intents.all()
@@ -273,93 +276,115 @@ async def toggle_updates(ctx):
 
 @bot.command(name='lastseen', aliases=['ls'])
 async def last_seen(ctx, user_identifier: str):
-    if user_mention := discord.utils.get(ctx.message.mentions, name=user_identifier):
-        username = user_mention.name
-        display_name = user_mention.display_name
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
     else:
-        username = user_identifier
-        display_name = user_identifier
-
-    server_id = ctx.guild.id
-    try:
-        with open(f'lastseen_{server_id}.json', 'r') as last_seen_file:
-            last_seen_data = json.load(last_seen_file)
-        last_seen_time = last_seen_data.get(username, last_seen_data.get(display_name, '`Not available` '))
-        if last_seen_time == 'Online Now':
-            await ctx.send(f'> :green_circle: **{user_identifier}** is currently online.')
+        if user_mention := discord.utils.get(ctx.message.mentions, name=user_identifier):
+            username = user_mention.name
+            display_name = user_mention.display_name
         else:
-            last_seen_timestamp = datetime.strptime(last_seen_time, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=timezone.utc)
-            now_utc = datetime.now(timezone.utc)
-            time_difference = now_utc - last_seen_timestamp
-            time_difference_str = format_timedelta(time_difference)
-            await ctx.send(f'> **{user_identifier}** was last seen online at: `{last_seen_time}` '
-                           f'[`{time_difference_str}` ago]')
-    except FileNotFoundError:
-        await ctx.send('No last seen data available.')
+            username = user_identifier
+            display_name = user_identifier
+    
+            server_id = ctx.guild.id
+            try:
+                with open(f'lastseen_{server_id}.json', 'r') as last_seen_file:
+                    last_seen_data = json.load(last_seen_file)
+                last_seen_time = last_seen_data.get(username, last_seen_data.get(display_name, '`Not available` '))
+                if last_seen_time == 'Online Now':
+                    await ctx.send(f'> :green_circle: **{user_identifier}** is currently online.')
+                else:
+                    last_seen_timestamp = datetime.strptime(last_seen_time, '%Y-%m-%d %H:%M:%S UTC').replace(tzinfo=timezone.utc)
+                    now_utc = datetime.now(timezone.utc)
+                    time_difference = now_utc - last_seen_timestamp
+                    time_difference_str = format_timedelta(time_difference)
+                    await ctx.send(f'> **{user_identifier}** was last seen online at: `{last_seen_time}` '
+                                   f'[`{time_difference_str}` ago]')
+            except FileNotFoundError:
+                await ctx.send('No last seen data available.')
 
 @bot.command(name='totalonline', aliases=['online'])
 async def total_online_time(ctx, user_identifier: str):
-    server_id = ctx.guild.id
-    try:
-        with open('totaltime.json', 'r') as total_time_file:
-            total_time_data = json.load(total_time_file)
-        
-        display_name = user_identifier
-        total_time_seconds = total_time_data.get(display_name, 0)
-        total_time_str = format_timedelta(timedelta(seconds=total_time_seconds))
-        await ctx.send(f'> Total online time for **{display_name}** : `{total_time_str}`')
-    except FileNotFoundError:
-        await ctx.send('No total online time data available.')
+
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
+    else:
+        server_id = ctx.guild.id
+        try:
+            with open('totaltime.json', 'r') as total_time_file:
+                total_time_data = json.load(total_time_file)
+            
+            display_name = user_identifier
+            total_time_seconds = total_time_data.get(display_name, 0)
+            total_time_str = format_timedelta(timedelta(seconds=total_time_seconds))
+            await ctx.send(f'> Total online time for **{display_name}** : `{total_time_str}`')
+        except FileNotFoundError:
+            await ctx.send('No total online time data available.')
         
 @bot.command(name='totalactive', aliases=['active'])
 async def total_online_time(ctx, user_identifier: str):
-    server_id = ctx.guild.id
-    try:
-        with open('totalonlinetime.json', 'r') as total_time_file:
-            total_time_data = json.load(total_time_file)
-        
-        display_name = user_identifier
-        total_time_seconds = total_time_data.get(display_name, 0)
-        total_time_str = format_timedelta(timedelta(seconds=total_time_seconds))
-        await ctx.send(f'> Total active time for **{display_name}** : `{total_time_str}`')
-    except FileNotFoundError:
-        await ctx.send('No total active time data available.')
+
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
+    else:
+        server_id = ctx.guild.id
+        try:
+            with open('totalonlinetime.json', 'r') as total_time_file:
+                total_time_data = json.load(total_time_file)
+            
+            display_name = user_identifier
+            total_time_seconds = total_time_data.get(display_name, 0)
+            total_time_str = format_timedelta(timedelta(seconds=total_time_seconds))
+            await ctx.send(f'> Total active time for **{display_name}** : `{total_time_str}`')
+        except FileNotFoundError:
+            await ctx.send('No total active time data available.')
 
 @bot.command(name='activeleaderboard', aliases=['leaderboard'])
 async def active_leaders(ctx):
-    try:
-        with open('activeleaderboard.json', 'r') as total_time_file:
-            total_time_data = json.load(total_time_file)
-        
-        total_time_counter = Counter(total_time_data)
-        top_10 = total_time_counter.most_common(10)
-        leaderboard_message = "**Top 10 Most Active Members:**\n"
-        for index, (display_name, total_time) in enumerate(top_10, start=1):
-            total_time_str = format_timedelta(timedelta(seconds=total_time))
-            leaderboard_message += f"{index}. {display_name} : `{total_time_str}`\n"
-
-        leaderboard_message += f"\n"
-        await ctx.send(leaderboard_message)
-    except FileNotFoundError:
-        await ctx.send('No total active time data available.')
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
+    else:    
+        try:
+            with open('activeleaderboard.json', 'r') as total_time_file:
+                total_time_data = json.load(total_time_file)
+            
+            total_time_counter = Counter(total_time_data)
+            top_10 = total_time_counter.most_common(10)
+            leaderboard_message = "**Top 10 Most Active Members:**\n"
+            for index, (display_name, total_time) in enumerate(top_10, start=1):
+                total_time_str = format_timedelta(timedelta(seconds=total_time))
+                leaderboard_message += f"{index}. {display_name} : `{total_time_str}`\n"
+    
+                leaderboard_message += f"\n"
+                await ctx.send(leaderboard_message)
+        except FileNotFoundError:
+            await ctx.send('No total active time data available.')
 
 @bot.command(name='onlineleaderboard')
 async def active_leaders(ctx):
-    try:
-        with open('onlineleaderboard.json', 'r') as total_time_file:
-            total_time_data = json.load(total_time_file)
-        
-        total_time_counter = Counter(total_time_data)
-        top_10 = total_time_counter.most_common(10)
-        leaderboard_message = "**Top 10 Online Members:**\n"
-        for index, (display_name, total_time) in enumerate(top_10, start=1):
-            total_time_str = format_timedelta(timedelta(seconds=total_time))
-            leaderboard_message += f"{index}. {display_name} : `{total_time_str}`\n"
-
-        leaderboard_message += f"\n"
-        await ctx.send(leaderboard_message)
-    except FileNotFoundError:
-        await ctx.send('No total online time data available.')
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
+    else:
+        try:
+            with open('onlineleaderboard.json', 'r') as total_time_file:
+                total_time_data = json.load(total_time_file)
+            
+            total_time_counter = Counter(total_time_data)
+            top_10 = total_time_counter.most_common(10)
+            leaderboard_message = "**Top 10 Online Members:**\n"
+            for index, (display_name, total_time) in enumerate(top_10, start=1):
+                total_time_str = format_timedelta(timedelta(seconds=total_time))
+                leaderboard_message += f"{index}. {display_name} : `{total_time_str}`\n"
+    
+                leaderboard_message += f"\n"
+                await ctx.send(leaderboard_message)
+        except FileNotFoundError:
+            await ctx.send('No total online time data available.')
 
 @bot.command(name='restart')
 @commands.has_permissions(administrator=True)
@@ -372,22 +397,29 @@ async def restart(ctx):
 
 @bot.command(name='seenhelp', help='List all commands and their descriptions')
 async def seenbothelp(ctx):
-    help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.\n\n **Tracking started : 13th Feb 2024** \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
 
-    help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play [url]\n/stop", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p [url]\n/s", inline=True)
-    help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.\nPlay a song from YouTube.\nStop the current song.", inline=True)
-    await ctx.send(embed=help_embed)
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
+    else:
+        help_embed = discord.Embed(title='SeenBOT  |  Information', description='SeenBOT tracks member activity and provides information/statistics on a given member, SeenBOT also has actvity leaderboards. Use the commands below.\n\n **Tracking started : {tracking_start_date}** \n\n[user] can be a username OR display name. (no @ symbol required)', color=discord.Color.green())
+        help_embed.add_field(name="Command", value="------\n/seenhelp\n/lastseen [user]\n/totalonline [user]\n/totalactive [user]\n/activeleaderboard\n/onlineleaderboard\n/play [url]\n/stop", inline=True)
+        help_embed.add_field(name="Alias", value="------\n\n/ls [user]\n/online [user]\n/active [user]\n/leaderboard\n\n/p [url]\n/s", inline=True)
+        help_embed.add_field(name="Description", value="------\nList all commands and their descriptions.\nDisplay last seen time for a member.\nDisplay total online time for a member.\nDisplay total active time for a member.\nDisplay top 10 most active members.\nDisplay top 10 online members.\nPlay a song from YouTube.\nStop the current song.", inline=True)
+        await ctx.send(embed=help_embed)
 
 @bot.command(name='adminhelp')
 @commands.has_permissions(administrator=True)
 async def seenbothelp(ctx):
-    help_embed = discord.Embed(title='ADMIN COMMAND LIST', description='List of all available admin commands and their descriptions', color=discord.Color.green())
-
-    help_embed.add_field(name="Command", value="------\n/adminhelp\n/toggleonline\n/toggleidle\n/restart\n/toggleplayer", inline=True)
-    help_embed.add_field(name="Alias", value="------\n\n/to\n/ti\n\n/tp", inline=True)
-    help_embed.add_field(name="Description", value="------\nList all admin commands and descriptions.\nToggle online/offline updates. (admin only)\nToggle idle updates. (admin only)\nSoft Restart the bot. (admin only)\nToggle enable music player.", inline=True)
-    await ctx.send(embed=help_embed)
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
+    else:
+        help_embed = discord.Embed(title='ADMIN COMMAND LIST', description='List of all available admin commands and their descriptions', color=discord.Color.green())
+        help_embed.add_field(name="Command", value="------\n/adminhelp\n/toggleonline\n/toggleidle\n/restart\n/toggleplayer\n/commandchannel", inline=True)
+        help_embed.add_field(name="Alias", value="------\n\n/to\n/ti\n\n/tp\n/tcc", inline=True)
+        help_embed.add_field(name="Description", value="------\nList all admin commands and descriptions.\nToggle online/offline updates. (admin only)\nToggle idle updates. (admin only)\nSoft Restart the bot. (admin only)\nToggle enable music player.\nToggle only command channel.", inline=True)
+        await ctx.send(embed=help_embed)
 
 def format_timedelta(td):
     days, seconds = td.days, td.seconds
@@ -396,40 +428,55 @@ def format_timedelta(td):
     seconds = seconds % 60
     return f"{hours} hrs, {minutes} mins, {seconds} secs"
 
+@bot.command(name='commandchannel', aliases=['tcc'])
+@commands.has_permissions(administrator=True)
+async def command_channel(ctx):
+    global any_channel
+    if any_channel == 'n':
+        any_channel = 'y'
+        await ctx.send('**Command Channel Disabled.**')
+    else:
+        any_channel = 'n'
+        await ctx.send('**Command Channel Enabled.**')
+
 @bot.command(name='toggleplayer', aliases=['tp'])
 @commands.has_permissions(administrator=True)
 async def toggle_player(ctx):
     global music_player
     if music_player == 'n':
         music_player = 'y'
-        await ctx.send('**Music player enabled.**')
+        await ctx.send('**Music Player Enabled.**')
     else:
         music_player = 'n'
-        await ctx.send('**Music player disabled.**')
+        await ctx.send('**Music Player Disabled.**')
 
 @bot.command(name='play', aliases=['p'])
 async def play(ctx, url):
-    voice_channel = ctx.author.voice.channel
-    if voice_channel:
-        if music_player == 'y':
-            try:
-                await voice_channel.connect()
-                voice_client = ctx.guild.voice_client
-                os.system(f'youtube-dl --force-ipv4 -x --audio-format mp3 {url} -o temp.mp3')
-                await asyncio.sleep(3)
-                voice_client.play(discord.FFmpegPCMAudio('temp.mp3'), after=lambda e: print('done', e))
-                await ctx.send(f'> :musical_note:  Now playing...  :musical_note: ')
-                while voice_client.is_playing():
-                    await asyncio.sleep(1)
-                os.remove('temp.mp3')
-                await voice_client.disconnect()
-            except Exception as e:
-                await ctx.send(f'An error occurred: {e}')
-                await voice_client.disconnect()
-        else:
-            await ctx.send("Music player is disabled.")
+    if any_channel == 'n' and ctx.channel.id != commands_channel_id:
+        await ctx.send("You can only use this command in the designated channel.")
+        return
     else:
-        await ctx.send("You need to be in a voice channel to use this command.")
+        voice_channel = ctx.author.voice.channel
+        if voice_channel:
+            if music_player == 'y':
+                try:
+                    await voice_channel.connect()
+                    voice_client = ctx.guild.voice_client
+                    os.system(f'youtube-dl --force-ipv4 -x --audio-format mp3 {url} -o temp.mp3')
+                    await asyncio.sleep(3)
+                    voice_client.play(discord.FFmpegPCMAudio('temp.mp3'), after=lambda e: print('done', e))
+                    await ctx.send(f'> :musical_note:  Now playing...  :musical_note: ')
+                    while voice_client.is_playing():
+                        await asyncio.sleep(1)
+                    os.remove('temp.mp3')
+                    await voice_client.disconnect()
+                except Exception as e:
+                    await ctx.send(f'An error occurred: {e}')
+                    await voice_client.disconnect()
+            else:
+                await ctx.send("Music player is disabled.")
+        else:
+            await ctx.send("You need to be in a voice channel to use this command.")
 
 @bot.command(name='stop', aliases=['s'])
 async def stop(ctx):
@@ -470,3 +517,4 @@ async def on_message_delete(message):
     await channel.send(f'> :no_entry_sign: DELETED MESSAGE :no_entry_sign: Member: **{author.display_name}** Content: `{content}`')
 
 bot.run(bot_token)
+
