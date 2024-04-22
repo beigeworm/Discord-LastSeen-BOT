@@ -1,6 +1,6 @@
 # ==================== Discord Message Backupper =========================
 # SYNOPSIS
-# Uses powershell along with Discord's API to retrieve all messages from all channels visible to the BOT
+# Uses Python along with Discord's API to retrieve all messages from all channels visible to the BOT
 
 # USAGE
 # 1. Run script and enter your bot token
