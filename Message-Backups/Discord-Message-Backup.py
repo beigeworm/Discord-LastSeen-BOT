@@ -3,7 +3,7 @@
 # Uses Python along with Discord's API to retrieve all messages from all channels visible to the BOT
 
 # USAGE
-# 1. Run script and enter your bot token
+# 1. Replace YOUR_BOT_TOKEN_HERE at the end of this script with your bot token
 # 2. Messages will be saved to text files in the same directory as the script
 
 import discord
