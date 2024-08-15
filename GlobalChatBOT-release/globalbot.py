@@ -180,7 +180,7 @@ async def update_global_chat_channels():
 
 
 async def update_activity_status():
-    num_guilds = len(bot.guilds) + 10
+    num_guilds = len(bot.guilds)
     activity = discord.Activity(type=discord.ActivityType.watching, 
                                 name=f'{num_guilds} server{"s" if num_guilds != 1 else ""}')
     await bot.change_presence(activity=activity)
