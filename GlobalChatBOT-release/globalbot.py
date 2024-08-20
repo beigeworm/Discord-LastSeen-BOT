@@ -20,8 +20,8 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 global_chat_channels = {}
 user_message_times = defaultdict(list)
-GLOBAL_CHAT_IDENTIFIER = ''
-ANTI_SPAM_TOPIC_IDENTIFIER = '' 
+GLOBAL_CHAT_IDENTIFIER = '9c70933aff6b2a6d08c687a6cbb6b765'
+ANTI_SPAM_TOPIC_IDENTIFIER = '9c70933aff6b2a6d08c687a6cbb6b765' 
 MUTE_DIR = 'mutes'
 
 if not os.path.exists(MUTE_DIR):
@@ -70,7 +70,21 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
+    now = datetime.now(timezone.utc)
+
     if isinstance(message.channel, discord.DMChannel):
+        user_message_times[(message.channel.id, message.author.id)].append(now)
+
+        user_message_times[(message.channel.id, message.author.id)] = [
+            timestamp for timestamp in user_message_times[(message.channel.id, message.author.id)]
+            if now - timestamp < timedelta(minutes=20)
+        ]
+
+        if len(user_message_times[(message.channel.id, message.author.id)]) > 1 and \
+                now - user_message_times[(message.channel.id, message.author.id)][-2] < timedelta(seconds=10):
+            await message.channel.send(f":no_entry: **Message Not Sent** 10 second slow-mode enabled!")
+            return
+
         if message.content.strip().lower() == '/start':
             if message.channel.id not in global_chat_channels:
                 global_chat_channels[message.channel.id] = message.channel
@@ -81,7 +95,6 @@ async def on_message(message):
                 await message.channel.send("Global chat stopped. Your messages will no longer be shared with global channels.")
         else:
             if message.channel.id in global_chat_channels:
-
                 for channel_id, channel in global_chat_channels.items():
                     if channel_id != message.channel.id:
                         if isinstance(channel, discord.TextChannel):
@@ -102,7 +115,6 @@ async def on_message(message):
         return
 
     if message.channel.topic and ANTI_SPAM_TOPIC_IDENTIFIER in message.channel.topic:
-        now = datetime.now(timezone.utc)
         user_message_times[(message.guild.id, message.author.id)].append(now)
 
         user_message_times[(message.guild.id, message.author.id)] = [
@@ -121,6 +133,7 @@ async def on_message(message):
                 now - user_message_times[(message.guild.id, message.author.id)][-2] < timedelta(seconds=10):
             await message.channel.send(f":no_entry: {message.author.mention} **Message Not Sent** 10 second slow-mode enabled!")
             return
+
         if '@everyone' in message.content:
             await message.channel.send(f":no_entry: {message.author.mention} **Message Not Sent** Messages containing `@everyone` are not allowed!")
             return
@@ -149,7 +162,7 @@ async def on_message(message):
             if channel_id != message.channel.id:
                 if isinstance(channel, discord.TextChannel):
                     muted_usernames = load_muted_users(channel.guild.id)
-                    
+
                     if username in muted_usernames:
                         continue
 
@@ -162,8 +175,6 @@ async def on_message(message):
                         await channel.send(f"-# Username: `{message.author.name}` \n{message.content}")
                     except Exception as e:
                         print(f"Failed to send message to DM channel {channel.id}: {e}")
-
-
 
 @bot.tree.command(name="mute")
 @app_commands.checks.has_permissions(manage_messages=True)
