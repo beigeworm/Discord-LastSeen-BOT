@@ -12,11 +12,20 @@
    - User mute functionality specific to each server
    - Automatic moderation for excessive messaging
 
-**Commands**
+**Public Server Commands**
 
-   - /mute <username>: Mute a specific user in the server
-   - /unmute <username>: Unmute a specific user in the server
-   - /mutelist: List all muted users in the server
+   *'Manage Messages' permission is required by the user for these commands*
+   - `/mute` <username>: Mute a specific user in the server
+   - `/unmute` <username>: Unmute a specific user in the server
+   - `/mutelist` List all muted users in the server
+
+**Direct Message Commands**
+
+   *Simply DM the bot with these commands to interact! No setup required!*
+   - `/start` DM the bot with this to start global chat from your DM thread
+   - `/stop` DM the bot with this to stop global chat in your DM thread
+
+
 
 **Setup Instructions**
 
