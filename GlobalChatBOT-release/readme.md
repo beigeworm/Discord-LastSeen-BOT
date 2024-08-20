@@ -27,7 +27,7 @@
 
 
 
-**Setup Instructions**
+**Setup Instructions** [server only]
 
    1. Click 'Add Bot' button above to add the bot to your server.
    2. Add this string to any channel's 'topic' section: 9c70933aff6b2a6d08c687a6cbb6b765
