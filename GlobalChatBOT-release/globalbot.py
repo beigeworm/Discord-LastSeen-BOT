@@ -20,8 +20,8 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 global_chat_channels = {}
 user_message_times = defaultdict(list)
-GLOBAL_CHAT_IDENTIFIER = 'aa8af3ebe14831a7cd1b6d1383a03755'
-ANTI_SPAM_TOPIC_IDENTIFIER = 'aa8af3ebe14831a7cd1b6d1383a03755' 
+GLOBAL_CHAT_IDENTIFIER = ''
+ANTI_SPAM_TOPIC_IDENTIFIER = '' 
 MUTE_DIR = 'mutes'
 
 if not os.path.exists(MUTE_DIR):
@@ -44,17 +44,16 @@ async def on_ready():
     print(f'Logged in as {bot.user.name}')
     await update_global_chat_channels()
     await update_activity_status()
+    update_activity_status_task.start() 
     check_channels.start()
     prune_message_history.start()
     await bot.tree.sync()
-
 
 @bot.event
 async def on_guild_join(guild):
     print(f"Bot joined guild: {guild.name}")
     await update_global_chat_channels()
     await update_activity_status()
-
 
 @bot.event
 async def on_guild_remove(guild):
@@ -66,10 +65,40 @@ async def on_guild_remove(guild):
         os.remove(mute_file_path)
     await update_activity_status()
 
-
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
+        return
+
+    if isinstance(message.channel, discord.DMChannel):
+        if message.content.strip().lower() == '/start':
+            if message.channel.id not in global_chat_channels:
+                global_chat_channels[message.channel.id] = message.channel
+                await message.channel.send("Global chat started. Your messages will be shared with global channels.")
+        elif message.content.strip().lower() == '/stop':
+            if message.channel.id in global_chat_channels:
+                del global_chat_channels[message.channel.id]
+                await message.channel.send("Global chat stopped. Your messages will no longer be shared with global channels.")
+        else:
+            if message.channel.id in global_chat_channels:
+
+                for channel_id, channel in global_chat_channels.items():
+                    if channel_id != message.channel.id:
+                        if isinstance(channel, discord.TextChannel):
+                            muted_usernames = load_muted_users(channel.guild.id)
+                            
+                            if message.author.name in muted_usernames:
+                                continue
+
+                            try:
+                                await channel.send(f"-# Username: `{message.author.name}` \n{message.content}")
+                            except Exception as e:
+                                print(f"Failed to send message to channel {channel.id} in guild {channel.guild.id}: {e}")
+                        elif isinstance(channel, discord.DMChannel):
+                            try:
+                                await channel.send(f"From DM channel - Username: `{message.author.name}` \n{message.content}")
+                            except Exception as e:
+                                print(f"Failed to send message to DM channel {channel.id}: {e}")
         return
 
     if message.channel.topic and ANTI_SPAM_TOPIC_IDENTIFIER in message.channel.topic:
@@ -81,7 +110,7 @@ async def on_message(message):
             if now - timestamp < timedelta(minutes=20)
         ]
 
-        if len(user_message_times[(message.guild.id, message.author.id)]) > 100:
+        if len(user_message_times[(message.guild.id, message.author.id)]) > 50:
             muted_usernames = load_muted_users(message.guild.id)
             muted_usernames.append(message.author.name)
             save_muted_users(message.guild.id, muted_usernames)
@@ -118,16 +147,23 @@ async def on_message(message):
 
         for channel_id, channel in global_chat_channels.items():
             if channel_id != message.channel.id:
-                receiving_server_id = channel.guild.id
-                muted_usernames = load_muted_users(receiving_server_id)
-                
-                if username in muted_usernames:
-                    continue
+                if isinstance(channel, discord.TextChannel):
+                    muted_usernames = load_muted_users(channel.guild.id)
+                    
+                    if username in muted_usernames:
+                        continue
 
-                try:
-                    await channel.send(f"-# Username: `{message.author.name}` \n{message.content}")
-                except Exception as e:
-                    print(f"Failed to send message to channel {channel.name} in guild {channel.guild.name}: {e}")
+                    try:
+                        await channel.send(f"-# Username: `{message.author.name}` \n{message.content}")
+                    except Exception as e:
+                        print(f"Failed to send message to channel {channel.id} in guild {channel.guild.id}: {e}")
+                elif isinstance(channel, discord.DMChannel):
+                    try:
+                        await channel.send(f"-# Username: `{message.author.name}` \n{message.content}")
+                    except Exception as e:
+                        print(f"Failed to send message to DM channel {channel.id}: {e}")
+
+
 
 @bot.tree.command(name="mute")
 @app_commands.checks.has_permissions(manage_messages=True)
@@ -178,14 +214,28 @@ async def update_global_chat_channels():
                 global_chat_channels[channel.id] = channel
                 print(f"Found global-chat channel: {channel.name} in guild: {guild.name}")
 
+    for dm_channel_id in global_chat_channels:
+        dm_channel = bot.get_channel(dm_channel_id)
+        if isinstance(dm_channel, discord.DMChannel):
+            global_chat_channels[dm_channel_id] = dm_channel
+            print(f"Added DM global-chat channel: {dm_channel.id}")
 
 async def update_activity_status():
-    num_guilds = len(bot.guilds)
+    global_chat_channel_count = 0
+    dm_channel_count = 0
+    for channel_id, channel in global_chat_channels.items():
+        if isinstance(channel, discord.TextChannel) or isinstance(channel, discord.DMChannel):
+            global_chat_channel_count += 1
+            if isinstance(channel, discord.DMChannel):
+                dm_channel_count += 1
     activity = discord.Activity(type=discord.ActivityType.watching, 
-                                name=f'{num_guilds} server{"s" if num_guilds != 1 else ""}')
+                                name=f'{global_chat_channel_count} channels ({dm_channel_count} DM\'s)')
     await bot.change_presence(activity=activity)
-    print(f"Activity updated to: Watching {num_guilds} server{'s' if num_guilds != 1 else ''}")
+    print(f"Activity updated to: Watching {global_chat_channel_count} channels ({dm_channel_count} DM\'s)")
 
+@tasks.loop(minutes=1)
+async def update_activity_status_task():
+    await update_activity_status()
 
 @tasks.loop(minutes=1)
 async def check_channels():
@@ -196,6 +246,12 @@ async def check_channels():
                     global_chat_channels[channel.id] = channel
                     print(f"Added new global-chat channel: {channel.name} in guild: {guild.name}")
 
+    for dm_channel_id in list(global_chat_channels.keys()):
+        dm_channel = bot.get_channel(dm_channel_id)
+        if isinstance(dm_channel, discord.DMChannel):
+            if dm_channel.id not in global_chat_channels:
+                global_chat_channels[dm_channel.id] = dm_channel
+                print(f"Added new DM global-chat channel: {dm_channel.id}")
 
 @tasks.loop(minutes=10)
 async def prune_message_history():
@@ -203,6 +259,5 @@ async def prune_message_history():
     prune_before = now - timedelta(minutes=20)
     for key in list(user_message_times.keys()):
         user_message_times[key] = [timestamp for timestamp in user_message_times[key] if timestamp > prune_before]
-
 
 bot.run(TOKEN)
