@@ -50,7 +50,7 @@ async def clone_roles(source_guild, target_guild):
             mentionable=role.mentionable,
         )
         role_mapping[role.id] = new_role
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.9)
     
     return role_mapping
 
@@ -65,7 +65,7 @@ async def clone_channels(source_guild, target_guild, role_mapping):
                 if role_mapping.get(role.id) is not None
             },
         )
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.9)
 
         for channel in category.channels:
             if isinstance(channel, discord.TextChannel):
@@ -90,7 +90,11 @@ async def clone_channels(source_guild, target_guild, role_mapping):
                         if role_mapping.get(role.id) is not None
                     },
                 )
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.9)
+
+# Utility function to split long messages into chunks
+def split_message(content, max_length=2000):
+    return [content[i:i+max_length] for i in range(0, len(content), max_length)]
 
 # Utility function to clone messages
 async def clone_messages(source_channel, target_channel):
@@ -103,7 +107,14 @@ async def clone_messages(source_channel, target_channel):
             for embed in message.embeds:
                 await target_channel.send(embed=embed)
         else:
-            await target_channel.send(f"-# Username: `{message.author.name}` \n{message.content}")
+            # Handle messages that are too long
+            content = f"-# Username: `{message.author.name}` \n{message.content}"
+            if len(content) > 2000:
+                chunks = split_message(content)
+                for chunk in chunks:
+                    await target_channel.send(chunk)
+            else:
+                await target_channel.send(content)
         await asyncio.sleep(0.5)
 
 @bot.tree.command(name="clone_guild")
